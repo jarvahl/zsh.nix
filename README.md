@@ -1,39 +1,46 @@
-# zsh-flake
+# nzf
 
 ## Disclaimer
 
 ⚠️ **This is a personal hobby project** developed in spare time.
 
 - The API surface is **unstable** and may change without notice
-- **Pin a revision** in your flake if you depend on zsh-flake
+- **Pin a revision** in your flake if you depend on nzf
 - Built with **AI assistance**
 - No support commitment or warranty
 
-## Configuration
+## Home Manager
 
 ```nix
 {
-  vi.enable = true;
-  autosuggestion.enable = true;
-  syntaxHighlighting.integrations.patina.enable = true;
+  imports = [ inputs.nzf.homeManagerModules.default ];
 
-  completion = {
+  programs.nzf = {
     enable = true;
-    integrations.fzf.enable = true;
+    settings.zsh = {
+      vi.enable = true;
+      autosuggestion.enable = true;
+      syntaxHighlighting.integrations.patina.enable = true;
+
+      completion = {
+        enable = true;
+        integrations.fzf.enable = true;
+      };
+
+      history.integrations.fzf.enable = true;
+
+      aliases = {
+        ll = "ls -l";
+        gs = "git status";
+      };
+
+      setopt = [
+        "AUTO_CD"
+        "EXTENDED_GLOB"
+      ];
+      unsetopt = [ "BEEP" ];
+    };
   };
-
-  history.integrations.fzf.enable = true;
-
-  aliases = {
-    ll = "ls -l";
-    gs = "git status";
-  };
-
-  setopt = [
-    "AUTO_CD"
-    "EXTENDED_GLOB"
-  ];
-  unsetopt = [ "BEEP" ];
 }
 ```
 

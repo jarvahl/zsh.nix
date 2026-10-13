@@ -1,4 +1,4 @@
-{ config, lib, ... }:
+{ config, inputs, lib, ... }:
 {
   perSystem =
     { pkgs, ... }:
@@ -38,31 +38,23 @@
         ];
       };
       completionFzfWithoutCompletionEval = builtins.tryEval completionFzfWithoutCompletion.drvPath;
-      hjemIntegration = lib.evalModules {
-        modules = [
-          config.flake.hjemModules.default
-          ({ lib, ... }: {
-            options.rum.programs.zsh = {
-              enable = lib.mkEnableOption "mock zsh";
-              initConfig = lib.mkOption {
-                type = lib.types.lines;
-                default = "";
-              };
-            };
-          })
-          {
-            rum.programs.zsh.flake = {
-              enable = true;
-              aliases.ll = "ls -l";
-            };
+      homeManagerIntegration = import "${inputs.home-manager}/modules" {
+        inherit pkgs;
+        configuration = {
+          imports = [ config.flake.homeManagerModules.default ];
 
-            rum.programs.zsh.initConfig = lib.mkAfter ''
-              echo after
-            '';
-          }
-        ];
-        specialArgs = {
-          inherit pkgs;
+          home.homeDirectory = "/tmp/nzf-smoke";
+          home.stateVersion = "25.11";
+          home.username = "nzf-smoke";
+
+          programs.nzf = {
+            enable = true;
+            settings.zsh.aliases.ll = "ls -l";
+          };
+
+          programs.zsh.initContent = lib.mkAfter ''
+            echo after
+          '';
         };
       };
       zdotdir = pkgs.runCommand "zdotdir" { } "mkdir -p $out && cp ${zshrc}/.zshrc $out/.zshrc";
@@ -114,19 +106,19 @@
           touch $out
         '';
 
-      checks.hjem-integration = pkgs.runCommand "nix-zsh-hjem-integration" { } ''
-        initConfig=${pkgs.writeText "hjem-zsh-init" hjemIntegration.config.rum.programs.zsh.initConfig}
+      checks.home-manager-integration = pkgs.runCommand "nzf-home-manager-integration" { } ''
+        initContent=${pkgs.writeText "nzf-zsh-init" homeManagerIntegration.config.programs.zsh.initContent}
 
-        ${lib.optionalString (!hjemIntegration.config.rum.programs.zsh.enable) ''
-          echo "expected rum.programs.zsh.flake.enable to enable rum.programs.zsh by default"
+        ${lib.optionalString (!homeManagerIntegration.config.programs.zsh.enable) ''
+          echo "expected programs.nzf.enable to enable programs.zsh by default"
           exit 1
         ''}
 
-        grep -q "^alias ll='ls -l'$" "$initConfig"
-        grep -q 'echo after' "$initConfig"
+        grep -q "^alias ll='ls -l'$" "$initContent"
+        grep -q 'echo after' "$initContent"
 
         line() {
-          grep -n "$1" "$initConfig" | head -n1 | cut -d: -f1
+          grep -n "$1" "$initContent" | head -n1 | cut -d: -f1
         }
 
         test "$(line "^alias ll='ls -l'$")" -lt "$(line 'echo after')"
