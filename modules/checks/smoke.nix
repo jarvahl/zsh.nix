@@ -43,18 +43,14 @@
         configuration = {
           imports = [ config.flake.homeManagerModules.default ];
 
-          home.homeDirectory = "/tmp/nzf-smoke";
+          home.homeDirectory = "/tmp/zsh-bundle-smoke";
           home.stateVersion = "25.11";
-          home.username = "nzf-smoke";
+          home.username = "zsh-bundle-smoke";
 
-          programs.nzf = {
+          programs.zsh.bundle = {
             enable = true;
-            settings.zsh.aliases.ll = "ls -l";
+            aliases.ll = "ls -l";
           };
-
-          programs.zsh.initContent = lib.mkAfter ''
-            echo after
-          '';
         };
       };
       zdotdir = pkgs.runCommand "zdotdir" { } "mkdir -p $out && cp ${zshrc}/.zshrc $out/.zshrc";
@@ -106,24 +102,24 @@
           touch $out
         '';
 
-      checks.home-manager-integration = pkgs.runCommand "nzf-home-manager-integration" { } ''
-        initContent=${pkgs.writeText "nzf-zsh-init" homeManagerIntegration.config.programs.zsh.initContent}
+      checks.home-manager-integration =
+        let
+          bundle = homeManagerIntegration.config.programs.zsh.bundle.package;
+        in
+        pkgs.runCommand "zsh-bundle-home-manager-integration" { } ''
+          if ${lib.boolToString homeManagerIntegration.config.programs.zsh.enable}; then
+            echo "expected programs.zsh.bundle to avoid enabling Home Manager programs.zsh"
+            exit 1
+          fi
 
-        ${lib.optionalString (!homeManagerIntegration.config.programs.zsh.enable) ''
-          echo "expected programs.nzf.enable to enable programs.zsh by default"
-          exit 1
-        ''}
+          export HOME="$(mktemp -d)"
+          echo 'echo HOME_ZSHRC_LOADED' > "$HOME/.zshrc"
 
-        grep -q "^alias ll='ls -l'$" "$initContent"
-        grep -q 'echo after' "$initContent"
+          output=$(${bundle}/bin/zsh-bundle -i -c 'print -- "ALIAS=$aliases[ll]"' 2>/dev/null)
+          echo "$output" | grep -q '^HOME_ZSHRC_LOADED$'
+          echo "$output" | grep -q '^ALIAS=ls -l$'
 
-        line() {
-          grep -n "$1" "$initContent" | head -n1 | cut -d: -f1
-        }
-
-        test "$(line "^alias ll='ls -l'$")" -lt "$(line 'echo after')"
-
-        touch $out
-      '';
+          touch $out
+        '';
     };
 }

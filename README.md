@@ -1,11 +1,11 @@
-# nzf
+# zsh.nix
 
 ## Disclaimer
 
 ⚠️ **This is a personal hobby project** developed in spare time.
 
 - The API surface is **unstable** and may change without notice
-- **Pin a revision** in your flake if you depend on nzf
+- **Pin a revision** in your flake if you depend on zsh.nix
 - Built with **AI assistance**
 - No support commitment or warranty
 
@@ -13,33 +13,31 @@
 
 ```nix
 {
-  imports = [ inputs.nzf.homeManagerModules.default ];
+  imports = [ inputs.zsh-nix.homeManagerModules.default ];
 
-  programs.nzf = {
+  programs.zsh.bundle = {
     enable = true;
-    settings.zsh = {
-      vi.enable = true;
-      autosuggestion.enable = true;
-      syntaxHighlighting.integrations.patina.enable = true;
+    vi.enable = true;
+    autosuggestion.enable = true;
+    syntaxHighlighting.integrations.patina.enable = true;
 
-      completion = {
-        enable = true;
-        integrations.fzf.enable = true;
-      };
-
-      history.integrations.fzf.enable = true;
-
-      aliases = {
-        ll = "ls -l";
-        gs = "git status";
-      };
-
-      setopt = [
-        "AUTO_CD"
-        "EXTENDED_GLOB"
-      ];
-      unsetopt = [ "BEEP" ];
+    completion = {
+      enable = true;
+      integrations.fzf.enable = true;
     };
+
+    history.integrations.fzf.enable = true;
+
+    aliases = {
+      ll = "ls -l";
+      gs = "git status";
+    };
+
+    setopt = [
+      "AUTO_CD"
+      "EXTENDED_GLOB"
+    ];
+    unsetopt = [ "BEEP" ];
   };
 }
 ```

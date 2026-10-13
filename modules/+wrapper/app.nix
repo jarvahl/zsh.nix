@@ -32,9 +32,9 @@
 
             initConfig = ''
               if [[ -n $SSH_CLIENT ]]; then
-                PROMPT="%F{cyan}[nzf]%f %F{green}%n@%m%f %B%F{magenta}❯%f%b "
+                PROMPT="%F{cyan}[zsh.nix]%f %F{green}%n@%m%f %B%F{magenta}❯%f%b "
               else
-                PROMPT="%F{cyan}[nzf]%f %B%F{magenta}❯%f%b "
+                PROMPT="%F{cyan}[zsh.nix]%f %B%F{magenta}❯%f%b "
               fi
             '';
           }
