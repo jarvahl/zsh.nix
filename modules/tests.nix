@@ -18,10 +18,12 @@ in
       integrationTests = pkgs.writeShellApplication {
         name = "integration-tests";
         runtimeInputs = [ pkgs.nix ];
-        text = lib.concatMapStringsSep "\n" (check: ''
-          echo "== ${check} =="
-          nix build --print-build-logs ".#checks.${system}.${check}"
-        '') (builtins.attrNames config.checks);
+        text = lib.concatMapStringsSep "\n"
+          (check: ''
+            echo "== ${check} =="
+            nix build --print-build-logs ".#checks.${system}.${check}"
+          '')
+          (builtins.attrNames config.checks);
       };
     in
     {
