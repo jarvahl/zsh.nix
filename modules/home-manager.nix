@@ -1,7 +1,7 @@
-{ config, inputs, ... }:
+{ config, inputs, self, ... }:
 
 let
-  flakeConfig = config;
+  zshModules = config.zsh.modules;
 
   homeManagerModule =
     { config, lib, pkgs, ... }:
@@ -55,11 +55,11 @@ let
     {
       options.programs.zsh.bundle = lib.mkOption {
         type = lib.types.submoduleWith {
-          modules = flakeConfig.zsh.modules ++ [ adapterModule ];
+          modules = zshModules ++ [ adapterModule ];
           specialArgs = {
             inherit pkgs;
             inherit inputs;
-            compileZshPlugin = flakeConfig.flake.lib.compileZshPlugin;
+            compileZshPlugin = self.lib.compileZshPlugin;
             dag = inputs.dag.lib { inherit lib; };
           };
         };
